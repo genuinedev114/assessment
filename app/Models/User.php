@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'current_brand_id',
     ];
 
     /**
@@ -41,4 +42,35 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function brands()
+    {
+        return $this->hasManyThrough(
+            Brand::class,
+            Store::class,
+            'id',
+            'id',
+            'id',
+            'brand_id'
+        )->distinct();
+    }
+
+    public function stores()
+    {
+        return $this->belongsToMany(Store::class, 'store_user')->withTimestamps();
+    }
+
+    public function currentBrand()
+    {
+        return $this->belongsTo(Brand::class, 'current_brand_id');
+    }
+
+  
+    public function currentBrandStores()
+    {
+        if (!$this->current_brand_id) {
+            return collect([]);
+        }
+        return $this->stores()->where('brand_id', $this->current_brand_id);
+    }
 }
